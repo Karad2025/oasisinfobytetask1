@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        .calculator {
+            background-color: 
+            #8c0a76;
+            border-radius: 20px;
+            width: 350px;
+            margin: 50px auto;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.19);
+        }
+
+        .display {
+            width: calc(100% - 40px);
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fcfcfc;
+            border-radius: 10px;
+            font-size: 2.5em;
+            text-align: right;
+            border: none;
+            color: #333;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            filter: brightness(90%);
+        }
+
+        .number {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .operator {
+            background-color: #ce4800;
+            color: white;
+        }
+
+        .special {
+            background-color: #a6a6a6;
+            color: #333;
+        }
+
+        .equals {
+            background-color: #007AFF;
+            color: white;
+            grid-row: span 2;
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" class="display" id="display" readonly>
+        <div class="buttons">
+            <button class="special" data-action="clear">C</button>
+            <button class="special" data-action="backspace">⌫</button>
+            <button class="operator" data-operator="/">/</button>
+            <button class="operator" data-operator="*">×</button>
+            <button class="number" data-number="7">7</button>
+            <button class="number" data-number="8">8</button>
+            <button class="number" data-number="9">9</button>
+            <button class="operator" data-operator="-">-</button>
+            <button class="number" data-number="4">4</button>
+            <button class="number" data-number="5">5</button>
+            <button class="number" data-number="6">6</button>
+            <button class="operator" data-operator="+">+</button>
+            <button class="number" data-number="1">1</button>
+            <button class="number" data-number="2">2</button>
+            <button class="number" data-number="3">3</button>
+            <button class="equals" data-action="equals">=</button>
+            <button class="number span-2" data-number="0">0</button>
+            <button class="number" data-number=".">.</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        let currentExpression = '';
+        let lastResult = '';
+
+        function updateDisplay(value) {
+            display.value = value;
+        }
+
+        function addToExpression(value) {
+            currentExpression += value;
+            updateDisplay(currentExpression);
+        }
+
+        function handleNumber(number) {
+            if (lastResult && currentExpression === lastResult.toString()) {
+                currentExpression = '';
+            }
+            addToExpression(number);
+        }
+
+        function handleOperator(operator) {
+            const lastChar = currentExpression.slice(-1);
+            if ('+-*/'.includes(lastChar)) {
+                currentExpression = currentExpression.slice(0, -1) + operator;
+            } else {
+                addToExpression(operator);
+            }
+        }
+
+        function handleDecimal() {
+            const parts = currentExpression.split(/[-+*/]/);
+            const lastPart = parts[parts.length - 1];
+            if (!lastPart.includes('.')) {
+                addToExpression('.');
+            }
+        }
+
+        function calculate() {
+            try {
+                lastResult = eval(currentExpression);
+                currentExpression = lastResult.toString();
+                updateDisplay(currentExpression);
+            } catch (error) {
+                currentExpression = '';
+                updateDisplay('Error');
+                setTimeout(() => updateDisplay(''), 1500);
+            }
+        }
+
+        function clearDisplay() {
+            currentExpression = '';
+            lastResult = '';
+            updateDisplay('');
+        }
+
+        function handleBackspace() {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay(currentExpression);
+        }
+
+        // Event Listeners
+        document.querySelectorAll('[data-number]').forEach(button => {
+            button.addEventListener('click', () => {
+                const number = button.dataset.number;
+                if (number === '.') {
+                    handleDecimal();
+                } else {
+                    handleNumber(number);
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-operator]').forEach(button => {
+            button.addEventListener('click', () => {
+                handleOperator(button.dataset.operator);
+            });
+        });
+
+        document.querySelector('[data-action="clear"]').addEventListener('click', clearDisplay);
+        document.querySelector('[data-action="backspace"]').addEventListener('click', handleBackspace);
+        document.querySelector('[data-action="equals"]').addEventListener('click', calculate);
+    </script>
+</body>
+</html>
